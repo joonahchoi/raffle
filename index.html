@@ -196,6 +196,52 @@
             .controls { flex-direction: column; width: 80%; }
             .controls input { width: 100%; }
         }
+
+/* 떠다니는 벚꽃 스타일 */
+        .floating-flower {
+            position: fixed; /* 화면 스크롤에 상관없이 전체 화면 기준 */
+            bottom: -100px;
+            pointer-events: none; /* 마우스 클릭 방해 안 함 */
+            z-index: 1; /* 배경 뒤로 보내기 */
+            animation: floatUp linear forwards;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        /* 위로 떠오르며 회전하는 애니메이션 */
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+
+    // === 🌸 배경에 떠다니는 벚꽃 효과 ===
+        function createFloatingFlowers() {
+            const flowers = ['🌸', '💮', '🌺'];
+            const flowerEl = document.createElement('div');
+            
+            // 랜덤으로 꽃 모양 선택
+            flowerEl.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+            flowerEl.className = 'floating-flower';
+            
+            // 무작위 위치, 크기, 애니메이션 속도 설정
+            flowerEl.style.left = Math.random() * 100 + 'vw';
+            flowerEl.style.fontSize = (Math.random() * 40 + 30) + 'px'; // 30px ~ 70px (커다란 크기)
+            const duration = Math.random() * 10 + 7; // 7초 ~ 17초 사이로 천천히 올라감
+            flowerEl.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(flowerEl);
+
+            // 화면 밖으로 나간 꽃은 메모리 확보를 위해 삭제
+            setTimeout(() => {
+                flowerEl.remove();
+            }, duration * 1000);
+        }
+
+        // 0.6초마다 새로운 꽃잎 생성 (숫자를 줄이면 더 많이, 늘리면 더 적게 나옵니다)
+        setInterval(createFloatingFlowers, 1000);
+    
     </style>
 </head>
 <body>
