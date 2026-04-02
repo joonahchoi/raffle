@@ -148,12 +148,13 @@
             z-index: 10;
         }
 
+        /* 결과 표시 영역 - 수정됨 (고정 배경색 제거 및 기본 글자색 흰색) */
         .result-ball {
             width: var(--ball-size);
             height: var(--ball-size);
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, #f3c300);
-            color: #000;
+            /* background: radial-gradient(circle at 30% 30%, #fff, #f3c300); /* <- 이 줄을 주석 처리하거나 제거 */
+            color: #ffffff; /* 기본 글자색을 흰색으로 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -338,13 +339,23 @@
             }, 2000); // 2초간 섞기 대기
         }
 
-        // === 4. 당첨 번호 화면에 표시 ===
+        // === 4. 당첨 번호 화면에 표시 - 수정됨 (랜덤 색상 할당) ===
         function displayWinner(number) {
             const ball = document.createElement('div');
             ball.className = 'result-ball';
             ball.innerText = number;
+        
+            // 통 안의 공 색상 배열을 결과 공에도 랜덤하게 적용
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
+            
+            // 만약 더 다양한 색상을 원하신다면, 아래와 같이 새로운 배열을 만들어 사용해도 됩니다.
+            // const resultColors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4', '#ffeb3b', '#673ab7'];
+            // const color = resultColors[Math.floor(Math.random() * resultColors.length)];
+            // ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
+        
             resultsEl.appendChild(ball);
-
+        
             // 기계 안의 공 하나 제거하여 시각적 효과 부여
             const machineBalls = document.querySelectorAll('.machine-ball');
             if (machineBalls.length > 0) {
