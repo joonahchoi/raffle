@@ -139,13 +139,23 @@
         /* 결과 표시 영역 */
         #results {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
+            flex-direction: column; /* 공이 든 상자들을 세로로 배치 */
+            align-items: center;    /* 가운데 정렬 */
+            width: 100%;
             max-width: 800px;
             margin: 30px 20px;
             min-height: 80px;
             z-index: 10;
+        }
+
+        /* 새 회차별 가로줄(Row) 스타일 추가 */
+        .result-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 20px; /* 위아래 줄 간격 */
         }
 
         /* 결과 표시 영역 - 수정됨 (고정 배경색 제거 및 기본 글자색 흰색) */
@@ -242,6 +252,7 @@
         let remainingBalls = [];
         let isDrawing = false;
         let mixInterval;
+        let currentRowEl = null; // <--- 이 줄을 새로 추가하세요!
 
         const machineEl = document.getElementById('machine');
         const resultsEl = document.getElementById('results');
