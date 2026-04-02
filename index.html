@@ -7,12 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <style>
+<style>
         :root {
-            --bg-color: #0a1428;
-            --container-bg: rgba(255, 255, 255, 0.05);
-            --gold: #f3c300;
-            --text-light: #ffffff;
+            /* 핑크 테마를 위한 색상 변수 변경 */
+            --bg-color: #fff0f3; /* 연한 핑크색 배경 (딸기우유빛) */
+            --container-bg: rgba(255, 255, 255, 0.7); /* 반투명 흰색 박스 */
+            --point-color: #ff4d6d; /* 진한 핑크색 포인트 (기존 골드 역할) */
+            --text-color: #590d22; /* 핑크 배경에 잘 보이는 어두운 와인/갈색 텍스트 */
             --ball-size: 60px;
         }
 
@@ -20,8 +21,7 @@
             margin: 0;
             padding: 0;
             background-color: var(--bg-color);
-            color: var(--text-light);
-            /* 글씨체 적용 */
+            color: var(--text-color); /* 기본 글자색 변경 */
             font-family: 'Do Hyeon', sans-serif;
             display: flex;
             flex-direction: column;
@@ -35,13 +35,13 @@
             width: 100%;
             text-align: center;
             padding: 20px 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 179, 198, 0.3); /* 연한 핑크 반투명 배경 */
             font-weight: 700;
             letter-spacing: 1px;
             z-index: 10;
         }
-        header { color: var(--gold); font-size: 1.8rem; }
-        footer { font-size: 1.5rem; color: #aaa; margin-top: auto; }
+        header { color: var(--point-color); font-size: 2.2rem; }
+        footer { font-size: 1.5rem; color: #a2556b; margin-top: auto; }
 
         /* 컨트롤 패널 (입력란) */
         .controls {
@@ -49,40 +49,41 @@
             padding: 20px;
             background: var(--container-bg);
             border-radius: 15px;
-            border: 1px solid rgba(243, 195, 0, 0.3);
+            border: 2px solid rgba(255, 77, 109, 0.3);
             display: flex;
             gap: 15px;
             align-items: center;
             flex-wrap: wrap;
             justify-content: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(255, 143, 163, 0.3); /* 핑크빛 그림자 */
             z-index: 10;
         }
 
         .controls input {
             padding: 10px 15px;
             font-size: 1.2rem;
-            font-family: 'Do Hyeon', sans-serif; /* 입력창에도 폰트 적용 */
-            border: 2px solid transparent;
+            font-family: 'Do Hyeon', sans-serif;
+            border: 2px solid #ffb3c6;
             border-radius: 8px;
             width: 120px;
             text-align: center;
             background: rgba(255,255,255,0.9);
+            color: var(--text-color);
             font-weight: bold;
         }
         
         .controls input:focus {
             outline: none;
-            border-color: var(--gold);
+            border-color: var(--point-color);
         }
 
         .controls button {
             padding: 10px 25px;
             font-size: 1.3rem;
-            font-family: 'Do Hyeon', sans-serif; /* 버튼에도 폰트 적용 */
+            font-family: 'Do Hyeon', sans-serif;
             font-weight: bold;
-            color: #000;
-            background: linear-gradient(135deg, #f3c300, #ffea7c);
+            color: #fff; /* 버튼 글씨는 흰색 */
+            background: linear-gradient(135deg, #ff758f, #ff4d6d); /* 핑크 그라데이션 */
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -91,12 +92,12 @@
 
         .controls button:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(243, 195, 0, 0.6);
+            box-shadow: 0 0 15px rgba(255, 77, 109, 0.5);
         }
 
         .controls button:disabled {
-            background: #555;
-            color: #888;
+            background: #ffccd5;
+            color: #fff;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -114,9 +115,10 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(0,0,0,0.5));
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 30px rgba(243, 195, 0, 0.2);
+            /* 기계 안쪽도 밝은 핑크 톤으로 변경 */
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255, 179, 198, 0.6));
+            border: 5px solid var(--point-color);
+            box-shadow: inset 0 0 30px rgba(255, 77, 109, 0.3), 0 10px 20px rgba(255, 77, 109, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -132,7 +134,7 @@
             justify-content: center;
             font-size: 12px;
             font-weight: bold;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             transition: transform 0.1s linear;
             top: 50%;
             left: 50%;
@@ -151,10 +153,9 @@
             z-index: 10;
         }
 
-        /* 새 회차별 가로줄(Row) 스타일 */
         .result-row {
             display: flex;
-            flex-direction: row; /* 가로로 확실하게 나열 */
+            flex-direction: row;
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
@@ -167,13 +168,13 @@
             width: var(--ball-size);
             height: var(--ball-size);
             border-radius: 50%;
-            color: #000000;
+            color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem; /* 숫자가 더 잘 보이도록 크기 키움 */
+            font-size: 2rem;
             font-weight: 900;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 15px rgba(255, 77, 109, 0.3); /* 공 그림자도 부드럽게 */
             opacity: 0;
             transform: scale(0);
             animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -188,7 +189,7 @@
 
         /* 유틸리티 */
         .hidden { display: none !important; }
-        .label-text { font-size: 1.2rem; margin-right: 5px; }
+        .label-text { font-size: 1.2rem; margin-right: 5px; color: var(--text-color); }
 
         @media (max-width: 600px) {
             header { font-size: 2rem; }
