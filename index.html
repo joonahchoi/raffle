@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경품 추첨 프로그램</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #0a1428;
+            --container-bg: rgba(255, 255, 255, 0.05);
+            --gold: #f3c300;
+            --text-light: #ffffff;
+            --ball-size: 60px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 헤더 및 푸터 */
+        header, footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+        header { color: var(--gold); font-size: 1.5rem; }
+        footer { font-size: 1rem; color: #aaa; margin-top: auto; }
+
+        /* 컨트롤 패널 (입력란) */
+        .controls {
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--container-bg);
+            border-radius: 15px;
+            border: 1px solid rgba(243, 195, 0, 0.3);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .controls input {
+            padding: 10px 15px;
+            font-size: 1.1rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            width: 120px;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+            font-weight: bold;
+        }
+        
+        .controls input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .controls button {
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #000;
+            background: linear-gradient(135deg, #f3c300, #ffea7c);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .controls button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(243, 195, 0, 0.6);
+        }
+
+        .controls button:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 추첨 기계 (중앙) */
+        .machine-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        #machine {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(0,0,0,0.5));
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 30px rgba(243, 195, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .machine-ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ff5722);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: transform 0.1s linear; /* 부드러운 섞임 애니메이션 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 결과 표시 영역 */
+        #results {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-width: 800px;
+            margin: 30px 20px;
+            min-height: 80px;
+            z-index: 10;
+        }
+
+        .result-ball {
+            width: var(--ball-size);
+            height: var(--ball-size);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #f3c300);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: scale(0);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 튀어나오는 애니메이션 */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.1) translateY(50px); }
+            50% { opacity: 1; transform: scale(1.2) translateY(-10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 캔버스 (폭죽용) */
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* 유틸리티 */
+        .hidden { display: none !important; }
+        .label-text { font-size: 1.1rem; margin-right: 5px; }
+
+        @media (max-width: 600px) {
+            header { font-size: 1.2rem; }
+            .controls { flex-direction: column; width: 80%; }
+            .controls input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti"></canvas>
+
+    <header>행사 주최: 제21대 경기도보건교사회</header>
+
+    <div class="controls" id="initControls">
+        <div>
+            <span class="label-text">총 인원(N):</span>
+            <input type="number" id="totalN" placeholder="예: 100" min="1">
+        </div>
+        <div>
+            <span class="label-text">뽑을 인원:</span>
+            <input type="number" id="drawCount" placeholder="예: 3" min="1">
+        </div>
+        <button id="startBtn" onclick="startDraw()">추첨 시작</button>
+    </div>
+
+    <div class="controls hidden" id="moreControls">
+        <div>
+            <span class="label-text">추가로 뽑을 인원:</span>
+            <input type="number" id="extraCount" placeholder="예: 2" min="1">
+        </div>
+        <button id="moreBtn" onclick="drawMore()">추가 추첨하기</button>
+    </div>
+
+    <div class="machine-wrapper">
+        <div id="machine">
+            </div>
+    </div>
+
+    <div id="results"></div>
+
+    <footer>제작자: 경기도보건교사회 학술이사 최준아</footer>
+
+    <script>
+        // === 오디오 설정 (추후 실제 파일 경로로 변경하세요) ===
+        const mixAudio = new Audio('https://exmaple.com/mixing-sound.mp3'); 
+        const winAudio = new Audio('https://exmaple.com/tada-sound.mp3');
+        // 브라우저 정책상 반복 재생을 위해 설정
+        mixAudio.loop = true; 
+
+        // === 전역 변수 ===
+        let totalBalls = [];
+        let remainingBalls = [];
+        let isDrawing = false;
+        let mixInterval;
+
+        const machineEl = document.getElementById('machine');
+        const resultsEl = document.getElementById('results');
+        const initControls = document.getElementById('initControls');
+        const moreControls = document.getElementById('moreControls');
+
+        // === 색상 배열 (통 안의 공 시각화용) ===
+        const colors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4'];
+
+        // === 1. 초기 추첨 시작 ===
+        function startDraw() {
+            if (isDrawing) return;
+
+            const n = parseInt(document.getElementById('totalN').value);
+            const count = parseInt(document.getElementById('drawCount').value);
+
+            if (isNaN(n) || isNaN(count) || n < 1 || count < 1) {
+                alert("올바른 숫자를 입력해주세요.");
+                return;
+            }
+            if (count > n) {
+                alert("총 인원보다 많이 뽑을 수 없습니다.");
+                return;
+            }
+
+            // 배열 초기화 및 공 생성
+            remainingBalls = Array.from({length: n}, (_, i) => i + 1);
+            resultsEl.innerHTML = '';
+            
+            // UI 변경
+            document.getElementById('totalN').disabled = true;
+            document.getElementById('drawCount').disabled = true;
+            document.getElementById('startBtn').disabled = true;
+
+            executeDrawProcess(count);
+        }
+
+        // === 2. 추가 추첨 시작 ===
+        function drawMore() {
+            if (isDrawing) return;
+
+            const extraCount = parseInt(document.getElementById('extraCount').value);
+
+            if (isNaN(extraCount) || extraCount < 1) {
+                alert("올바른 숫자를 입력해주세요.");
+                return;
+            }
+            if (extraCount > remainingBalls.length) {
+                alert(`남은 인원(${remainingBalls.length}명)보다 많이 뽑을 수 없습니다.`);
+                return;
+            }
+
+            moreControls.classList.add('hidden');
+            executeDrawProcess(extraCount);
+        }
+
+        // === 3. 핵심 추첨 프로세스 (애니메이션 + 로직) ===
+        function executeDrawProcess(drawLimit) {
+            isDrawing = true;
+            createMachineBalls(); // 통 안에 시각적 공 생성
+            
+            // 섞는 소리 재생 (오류 무시 처리)
+            mixAudio.play().catch(e => console.log("Audio play blocked by browser"));
+
+            // 1) 공 섞기 애니메이션 시작
+            mixInterval = setInterval(() => {
+                const balls = document.querySelectorAll('.machine-ball');
+                balls.forEach(ball => {
+                    const x = (Math.random() - 0.5) * 250; // -125px ~ 125px
+                    const y = (Math.random() - 0.5) * 250;
+                    ball.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                });
+            }, 100);
+
+            // 2) 2초간 섞은 후, 1초 간격으로 하나씩 추출
+            setTimeout(() => {
+                let drawnCount = 0;
+
+                const drawInterval = setInterval(() => {
+                    if (drawnCount >= drawLimit) {
+                        // 추출 완료
+                        clearInterval(drawInterval);
+                        finishDrawProcess();
+                        return;
+                    }
+
+                    // 랜덤 인덱스 추출 (핵심: remainingBalls에서 뽑고 즉시 삭제)
+                    const randomIndex = Math.floor(Math.random() * remainingBalls.length);
+                    const winningNumber = remainingBalls.splice(randomIndex, 1)[0];
+
+                    displayWinner(winningNumber);
+                    drawnCount++;
+                }, 1000); // 1초 간격
+
+            }, 2000); // 2초간 섞기 대기
+        }
+
+        // === 4. 당첨 번호 화면에 표시 ===
+        function displayWinner(number) {
+            const ball = document.createElement('div');
+            ball.className = 'result-ball';
+            ball.innerText = number;
+            resultsEl.appendChild(ball);
+
+            // 기계 안의 공 하나 제거하여 시각적 효과 부여
+            const machineBalls = document.querySelectorAll('.machine-ball');
+            if (machineBalls.length > 0) {
+                machineBalls[0].remove();
+            }
+        }
+
+        // === 5. 추첨 종료 후 처리 (폭죽, 사운드, UI 전환) ===
+        function finishDrawProcess() {
+            clearInterval(mixInterval);
+            isDrawing = false;
+            machineEl.innerHTML = ''; // 통 비우기
+            
+            mixAudio.pause();
+            mixAudio.currentTime = 0;
+            winAudio.play().catch(e => console.log("Audio play blocked"));
+
+            fireConfetti(); // 폭죽 효과
+
+            // UI 전환 (초기 패널 숨기고 추가 추첨 패널 보이기)
+            initControls.classList.add('hidden');
+            moreControls.classList.remove('hidden');
+            document.getElementById('extraCount').value = '';
+        }
+
+        // === 시각적 보조: 통 안의 공 생성 ===
+        function createMachineBalls() {
+            machineEl.innerHTML = '';
+            // 퍼포먼스를 위해 화면에 보여줄 공은 최대 50개로 제한
+            const displayCount = Math.min(remainingBalls.length, 50); 
+            
+            for (let i = 0; i < displayCount; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'machine-ball';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
+                machineEl.appendChild(ball);
+            }
+        }
+
+        // === 폭죽(Confetti) 효과 로직 (라이브러리 없이 Canvas로 구현) ===
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        function fireConfetti() {
+            particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            requestAnimationFrame(animateConfetti);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.tiltAngle += p.tiltAngleInc;
+                p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle) * 2;
+                
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                if (p.y > canvas.height) particles.splice(index, 1);
+            });
+        }
+
+        // 창 크기 변경 시 캔버스 리사이징
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
