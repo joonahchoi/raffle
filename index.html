@@ -309,11 +309,17 @@
             executeDrawProcess(extraCount);
         }
 
-        // === 3. 핵심 추첨 프로세스 (애니메이션 + 로직) ===
+// === 3. 핵심 추첨 프로세스 (애니메이션 + 로직) ===
         function executeDrawProcess(drawLimit) {
             isDrawing = true;
             createMachineBalls(); // 통 안에 시각적 공 생성
             
+            // --- 👇 새로 추가된 부분: 회차별 새로운 줄(Row) 만들기 ---
+            currentRowEl = document.createElement('div');
+            currentRowEl.className = 'result-row';
+            resultsEl.appendChild(currentRowEl);
+            // --------------------------------------------------------
+
             // 섞는 소리 재생 (오류 무시 처리)
             mixAudio.play().catch(e => console.log("Audio play blocked by browser"));
 
@@ -321,7 +327,7 @@
             mixInterval = setInterval(() => {
                 const balls = document.querySelectorAll('.machine-ball');
                 balls.forEach(ball => {
-                    const x = (Math.random() - 0.5) * 250; // -125px ~ 125px
+                    const x = (Math.random() - 0.5) * 250; 
                     const y = (Math.random() - 0.5) * 250;
                     ball.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
                 });
@@ -333,40 +339,35 @@
 
                 const drawInterval = setInterval(() => {
                     if (drawnCount >= drawLimit) {
-                        // 추출 완료
                         clearInterval(drawInterval);
                         finishDrawProcess();
                         return;
                     }
 
-                    // 랜덤 인덱스 추출 (핵심: remainingBalls에서 뽑고 즉시 삭제)
                     const randomIndex = Math.floor(Math.random() * remainingBalls.length);
                     const winningNumber = remainingBalls.splice(randomIndex, 1)[0];
 
                     displayWinner(winningNumber);
                     drawnCount++;
-                }, 1000); // 1초 간격
+                }, 1000);
 
-            }, 2000); // 2초간 섞기 대기
+            }, 2000); 
         }
 
-        // === 4. 당첨 번호 화면에 표시 - 수정됨 (랜덤 색상 할당) ===
+  // === 4. 당첨 번호 화면에 표시 ===
         function displayWinner(number) {
             const ball = document.createElement('div');
             ball.className = 'result-ball';
             ball.innerText = number;
-        
-            // 통 안의 공 색상 배열을 결과 공에도 랜덤하게 적용
+
+            // 다양한 색상 적용 (이전에 수정하신 코드 그대로 유지)
             const color = colors[Math.floor(Math.random() * colors.length)];
             ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
-            
-            // 만약 더 다양한 색상을 원하신다면, 아래와 같이 새로운 배열을 만들어 사용해도 됩니다.
-            // const resultColors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4', '#ffeb3b', '#673ab7'];
-            // const color = resultColors[Math.floor(Math.random() * resultColors.length)];
-            // ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
-        
-            resultsEl.appendChild(ball);
-        
+
+            // --- 👇 수정된 부분: resultsEl 대신 currentRowEl에 공을 추가 ---
+            currentRowEl.appendChild(ball); 
+            // ---------------------------------------------------------------
+
             // 기계 안의 공 하나 제거하여 시각적 효과 부여
             const machineBalls = document.querySelectorAll('.machine-ball');
             if (machineBalls.length > 0) {
@@ -374,6 +375,7 @@
             }
         }
 
+        
         // === 5. 추첨 종료 후 처리 (폭죽, 사운드, UI 전환) ===
         function finishDrawProcess() {
             clearInterval(mixInterval);
