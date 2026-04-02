@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>경품 추첨 프로그램</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+    <style>
         :root {
             --bg-color: #0a1428;
             --container-bg: rgba(255, 255, 255, 0.05);
@@ -20,7 +21,8 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-light);
-            font-family: 'Noto Sans KR', sans-serif;
+            /* 글씨체 적용 */
+            font-family: 'Do Hyeon', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -38,7 +40,7 @@
             letter-spacing: 1px;
             z-index: 10;
         }
-        header { color: var(--gold); font-size: 1.5rem; }
+        header { color: var(--gold); font-size: 1.8rem; }
         footer { font-size: 1rem; color: #aaa; margin-top: auto; }
 
         /* 컨트롤 패널 (입력란) */
@@ -59,7 +61,8 @@
 
         .controls input {
             padding: 10px 15px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            font-family: 'Do Hyeon', sans-serif; /* 입력창에도 폰트 적용 */
             border: 2px solid transparent;
             border-radius: 8px;
             width: 120px;
@@ -75,7 +78,8 @@
 
         .controls button {
             padding: 10px 25px;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            font-family: 'Do Hyeon', sans-serif; /* 버튼에도 폰트 적용 */
             font-weight: bold;
             color: #000;
             background: linear-gradient(135deg, #f3c300, #ffea7c);
@@ -122,7 +126,6 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, #ff5722);
             color: white;
             display: flex;
             align-items: center;
@@ -130,7 +133,7 @@
             font-size: 12px;
             font-weight: bold;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            transition: transform 0.1s linear; /* 부드러운 섞임 애니메이션 */
+            transition: transform 0.1s linear;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -139,8 +142,8 @@
         /* 결과 표시 영역 */
         #results {
             display: flex;
-            flex-direction: column; /* 공이 든 상자들을 세로로 배치 */
-            align-items: center;    /* 가운데 정렬 */
+            flex-direction: column;
+            align-items: center;
             width: 100%;
             max-width: 800px;
             margin: 30px 20px;
@@ -148,27 +151,27 @@
             z-index: 10;
         }
 
-        /* 새 회차별 가로줄(Row) 스타일 추가 */
+        /* 새 회차별 가로줄(Row) 스타일 */
         .result-row {
             display: flex;
+            flex-direction: row; /* 가로로 확실하게 나열 */
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
             width: 100%;
-            margin-bottom: 20px; /* 위아래 줄 간격 */
+            margin-bottom: 20px;
         }
 
-        /* 결과 표시 영역 - 수정됨 (고정 배경색 제거 및 기본 글자색 흰색) */
+        /* 결과 표시 공 */
         .result-ball {
             width: var(--ball-size);
             height: var(--ball-size);
             border-radius: 50%;
-            /* background: radial-gradient(circle at 30% 30%, #fff, #f3c300); /* <- 이 줄을 주석 처리하거나 제거 */
-            color: #000000; /* 기본 글자색을 흰색으로 */
+            color: #000000;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 2rem; /* 숫자가 더 잘 보이도록 크기 키움 */
             font-weight: 900;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             opacity: 0;
@@ -183,31 +186,18 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* 캔버스 (폭죽용) */
-        #confetti {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 9999;
-        }
-
         /* 유틸리티 */
         .hidden { display: none !important; }
-        .label-text { font-size: 1.1rem; margin-right: 5px; }
+        .label-text { font-size: 1.2rem; margin-right: 5px; }
 
         @media (max-width: 600px) {
-            header { font-size: 1.2rem; }
+            header { font-size: 1.5rem; }
             .controls { flex-direction: column; width: 80%; }
             .controls input { width: 100%; }
         }
     </style>
 </head>
 <body>
-
-    <canvas id="confetti"></canvas>
 
     <header> 제21대 경기도보건교사회 2026 정기이사회 </header>
 
@@ -232,8 +222,7 @@
     </div>
 
     <div class="machine-wrapper">
-        <div id="machine">
-            </div>
+        <div id="machine"></div>
     </div>
 
     <div id="results"></div>
@@ -241,10 +230,9 @@
     <footer>Made by. 경기도보건교사회 학술이사 수성중학교 최준아</footer>
 
     <script>
-        // === 오디오 설정 (추후 실제 파일 경로로 변경하세요) ===
-        const mixAudio = new Audio('https://exmaple.com/mixing-sound.mp3'); 
-        const winAudio = new Audio('https://exmaple.com/tada-sound.mp3');
-        // 브라우저 정책상 반복 재생을 위해 설정
+        // === 2. 작동하는 오디오 설정 (두구두구, 빵빠레) ===
+        const mixAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'); 
+        const winAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
         mixAudio.loop = true; 
 
         // === 전역 변수 ===
@@ -252,15 +240,15 @@
         let remainingBalls = [];
         let isDrawing = false;
         let mixInterval;
-        let currentRowEl = null; // <--- 이 줄을 새로 추가하세요!
+        let currentRowEl = null;
 
         const machineEl = document.getElementById('machine');
         const resultsEl = document.getElementById('results');
         const initControls = document.getElementById('initControls');
         const moreControls = document.getElementById('moreControls');
 
-        // === 색상 배열 (통 안의 공 시각화용) ===
-        const colors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4'];
+        // === 색상 배열 ===
+        const colors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4', '#ffeb3b'];
 
         // === 1. 초기 추첨 시작 ===
         function startDraw() {
@@ -278,11 +266,9 @@
                 return;
             }
 
-            // 배열 초기화 및 공 생성
             remainingBalls = Array.from({length: n}, (_, i) => i + 1);
             resultsEl.innerHTML = '';
             
-            // UI 변경
             document.getElementById('totalN').disabled = true;
             document.getElementById('drawCount').disabled = true;
             document.getElementById('startBtn').disabled = true;
@@ -309,21 +295,19 @@
             executeDrawProcess(extraCount);
         }
 
-// === 3. 핵심 추첨 프로세스 (애니메이션 + 로직) ===
+        // === 3. 핵심 추첨 프로세스 ===
         function executeDrawProcess(drawLimit) {
             isDrawing = true;
-            createMachineBalls(); // 통 안에 시각적 공 생성
+            createMachineBalls();
             
-            // --- 👇 새로 추가된 부분: 회차별 새로운 줄(Row) 만들기 ---
+            // 아래로 쌓이도록 appendChild 유지
             currentRowEl = document.createElement('div');
             currentRowEl.className = 'result-row';
             resultsEl.appendChild(currentRowEl);
-            // --------------------------------------------------------
 
-            // 섞는 소리 재생 (오류 무시 처리)
+            // 두구두구 소리 재생
             mixAudio.play().catch(e => console.log("Audio play blocked by browser"));
 
-            // 1) 공 섞기 애니메이션 시작
             mixInterval = setInterval(() => {
                 const balls = document.querySelectorAll('.machine-ball');
                 balls.forEach(ball => {
@@ -333,7 +317,6 @@
                 });
             }, 100);
 
-            // 2) 2초간 섞은 후, 1초 간격으로 하나씩 추출
             setTimeout(() => {
                 let drawnCount = 0;
 
@@ -354,41 +337,38 @@
             }, 2000); 
         }
 
-  // === 4. 당첨 번호 화면에 표시 ===
+        // === 4. 당첨 번호 화면에 표시 ===
         function displayWinner(number) {
             const ball = document.createElement('div');
             ball.className = 'result-ball';
             ball.innerText = number;
 
-            // 다양한 색상 적용 (이전에 수정하신 코드 그대로 유지)
             const color = colors[Math.floor(Math.random() * colors.length)];
             ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${color})`;
 
-            // --- 👇 수정된 부분: resultsEl 대신 currentRowEl에 공을 추가 ---
             currentRowEl.appendChild(ball); 
-            // ---------------------------------------------------------------
 
-            // 기계 안의 공 하나 제거하여 시각적 효과 부여
             const machineBalls = document.querySelectorAll('.machine-ball');
             if (machineBalls.length > 0) {
                 machineBalls[0].remove();
             }
         }
 
-        
-        // === 5. 추첨 종료 후 처리 (폭죽, 사운드, UI 전환) ===
+        // === 5. 추첨 종료 후 처리 ===
         function finishDrawProcess() {
             clearInterval(mixInterval);
             isDrawing = false;
-            machineEl.innerHTML = ''; // 통 비우기
+            machineEl.innerHTML = ''; 
             
             mixAudio.pause();
             mixAudio.currentTime = 0;
+            
+            // 빵빠레 소리 재생
             winAudio.play().catch(e => console.log("Audio play blocked"));
 
-            fireConfetti(); // 폭죽 효과
+            // 전문가용 폭죽 실행
+            fireConfetti(); 
 
-            // UI 전환 (초기 패널 숨기고 추가 추첨 패널 보이기)
             initControls.classList.add('hidden');
             moreControls.classList.remove('hidden');
             document.getElementById('extraCount').value = '';
@@ -397,7 +377,6 @@
         // === 시각적 보조: 통 안의 공 생성 ===
         function createMachineBalls() {
             machineEl.innerHTML = '';
-            // 퍼포먼스를 위해 화면에 보여줄 공은 최대 50개로 제한
             const displayCount = Math.min(remainingBalls.length, 50); 
             
             for (let i = 0; i < displayCount; i++) {
@@ -409,55 +388,32 @@
             }
         }
 
-        // === 폭죽(Confetti) 효과 로직 (라이브러리 없이 Canvas로 구현) ===
-        const canvas = document.getElementById('confetti');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let particles = [];
+        // === 3. 전문가용 폭죽(Confetti) 라이브러리 실행 로직 ===
         function fireConfetti() {
-            particles = [];
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: canvas.width / 2,
-                    y: canvas.height / 2 + 100,
-                    r: Math.random() * 6 + 2,
-                    dx: Math.random() * 20 - 10,
-                    dy: Math.random() * -20 - 5,
-                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-                    tilt: Math.floor(Math.random() * 10) - 10,
-                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
-                    tiltAngle: 0
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
                 });
-            }
-            animateConfetti();
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
         }
-
-        function animateConfetti() {
-            requestAnimationFrame(animateConfetti);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, index) => {
-                p.tiltAngle += p.tiltAngleInc;
-                p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
-                p.x += Math.sin(p.tiltAngle) * 2;
-                
-                ctx.beginPath();
-                ctx.lineWidth = p.r;
-                ctx.strokeStyle = p.color;
-                ctx.moveTo(p.x + p.tilt + p.r, p.y);
-                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
-                ctx.stroke();
-
-                if (p.y > canvas.height) particles.splice(index, 1);
-            });
-        }
-
-        // 창 크기 변경 시 캔버스 리사이징
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
     </script>
 </body>
 </html>
