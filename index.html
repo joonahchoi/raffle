@@ -41,7 +41,7 @@
             z-index: 10;
         }
         header { color: var(--point-color); font-size: 2.2rem; }
-        footer { font-size: 1.5rem; color: #a2556b; margin-top: auto; }
+        footer { font-size: 1.3rem; color: #a2556b; margin-top: auto; }
 
         /* 컨트롤 패널 (입력란) */
         .controls {
@@ -216,28 +216,6 @@
             100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
         }
 
-    // === 🌸 배경에 떠다니는 벚꽃 효과 ===
-        function createFloatingFlowers() {
-            const flowers = ['🌸', '💮', '🌺'];
-            const flowerEl = document.createElement('div');
-            
-            // 랜덤으로 꽃 모양 선택
-            flowerEl.innerText = flowers[Math.floor(Math.random() * flowers.length)];
-            flowerEl.className = 'floating-flower';
-            
-            // 무작위 위치, 크기, 애니메이션 속도 설정
-            flowerEl.style.left = Math.random() * 100 + 'vw';
-            flowerEl.style.fontSize = (Math.random() * 40 + 30) + 'px'; // 30px ~ 70px (커다란 크기)
-            const duration = Math.random() * 10 + 7; // 7초 ~ 17초 사이로 천천히 올라감
-            flowerEl.style.animationDuration = duration + 's';
-            
-            document.body.appendChild(flowerEl);
-
-            // 화면 밖으로 나간 꽃은 메모리 확보를 위해 삭제
-            setTimeout(() => {
-                flowerEl.remove();
-            }, duration * 1000);
-        }
 
         // 0.6초마다 새로운 꽃잎 생성 (숫자를 줄이면 더 많이, 늘리면 더 적게 나옵니다)
         setInterval(createFloatingFlowers, 1000);
@@ -294,9 +272,30 @@
         const initControls = document.getElementById('initControls');
         const moreControls = document.getElementById('moreControls');
 
-        // === 색상 배열 ===
-        const colors = ['#ff5722', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#00bcd4', '#ffeb3b'];
+// === 색상 배열 (핑크 테마에 맞춰서 화사한 색들로) ===
+        const colors = ['#ffb3c6', '#ffc2d1', '#ffe5ec', '#ffc8dd', '#ffafcc', '#bde0fe', '#a2d2ff'];
 
+// === 🌸 벚꽃 생성 자바스크립트 🌸 ===
+        function createFloatingFlowers() {
+            const flowers = ['🌸', '💮', '🌺', '✨'];
+            const flowerEl = document.createElement('div');
+            
+            flowerEl.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+            flowerEl.className = 'floating-flower';
+            
+            flowerEl.style.left = Math.random() * 100 + 'vw';
+            flowerEl.style.fontSize = (Math.random() * 30 + 20) + 'px'; 
+            
+            const duration = Math.random() * 10 + 7; 
+            flowerEl.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(flowerEl);
+
+            setTimeout(() => {
+                flowerEl.remove();
+            }, duration * 1000);
+        }
+        
         // === 1. 초기 추첨 시작 ===
         function startDraw() {
             if (isDrawing) return;
